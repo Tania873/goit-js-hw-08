@@ -1,7 +1,7 @@
 import throttle from 'lodash.throttle';
 
 const feedbackFormEl = document.querySelector('.feedback-form');
-const userData = {};
+let userData = {};
 
 const fillFeedbackFormFields = () => {
     let feedbackFormDataFromLS;
@@ -20,6 +20,7 @@ const fillFeedbackFormFields = () => {
             feedbackFormEl.elements[prop].value = feedbackFormDataFromLS[prop];
         }
     }
+    userData = feedbackFormDataFromLS || {};
 }
 
 fillFeedbackFormFields();
