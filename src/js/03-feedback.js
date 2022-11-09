@@ -1,14 +1,52 @@
-//Відстежуй на формі подію input, і щоразу записуй у локальне сховище об'єкт з полями email і message,
-//у яких зберігай поточні значення полів форми.Нехай ключем для сховища буде рядок "feedback-form-state".
-//Під час завантаження сторінки перевіряй стан сховища, і якщо там є збережені дані, заповнюй ними поля форми. В іншому випадку поля повинні бути порожніми.
-//Під час сабміту форми очищуй сховище і поля форми, а також виводь у консоль об'єкт з полями email, message та їхніми поточними значеннями.
-//Зроби так, щоб сховище оновлювалось не частіше, ніж раз на 500 мілісекунд. Для цього додай до проекту і використовуй бібліотеку lodash.throttle.
+import throttle from 'lodash.throttle';
 
-const feedbackFormEl = document.querySelector('.feedback-form-state');
-console.log('feedbackFormEl');
+const feedbackFormEl = document.querySelector('.feedback-form');
+const userData = {};
 
-const onFormFieldInput = event => {
-    console.log(event.target);
+const fillFeedbackFormFields = () => {
+    let feedbackFormDataFromLS;
+    try {
+        feedbackFormDataFromLS = JSON.parse(localStorage.getItem('feedback-form-state'));
+
+        if (feedbackFormDataFromLS === null) {
+            return;
+        }
+    } catch (err) {
+        console.log(err);
+    }
+
+    for (const prop in feedbackFormDataFromLS) {
+        if (feedbackFormDataFromLS.hasOwnProperty(prop)) {
+            feedbackFormEl.elements[prop].value = feedbackFormDataFromLS[prop];
+        }
+    }
 }
 
-feedbackFormEl.addEventListener('input', onFormFieldInput);
+fillFeedbackFormFields();
+
+const onFormFieldInput = event => {
+    const { target } = event;
+
+    const inputName = target.name;
+    const inputValue = target.value;
+
+    userData[inputName] = inputValue;
+
+    localStorage.setItem('feedback-form-state', JSON.stringify(userData));
+}
+
+const feedbackFormSubmit = event => {
+    event.preventDefault();
+
+    if (event.target.email.value === '' || event.target.message.value === '') {
+        return alert('Всі поля повинні бути заповнені!');
+    }
+
+    localStorage.removeItem('feedback-form-state');
+    feedbackFormEl.reset();
+
+    console.log(userData);
+}
+
+feedbackFormEl.addEventListener('input', throttle(onFormFieldInput, 500));
+feedbackFormEl.addEventListener('submit', feedbackFormSubmit);
